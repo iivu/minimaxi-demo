@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from fastapi import FastAPI, UploadFile, Form
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 import db
 import t
 import utils
@@ -16,8 +17,11 @@ headers = {
   'Authorization': f'Bearer {os.getenv("MINIMAX_API_KEY")}',
   'Content-Type': 'application/json',
 }
-# sample_text = '江山如此多娇，引无数英雄竞折腰。惜秦皇汉武，略输文采；唐宗宋祖，稍逊风骚。一代天骄，成吉思汗，只识弯弓射大雕。俱往矣，数风流人物，还看今朝。'
-sample_text = '想来西北的朋友，一定要先联系我们。小恐龙国旅推出的青甘环线纯玩王牌线路，7天6晚畅游青海湖、茶卡盐湖、U型公路、水上雅丹、翡翠湖、黑独山、莫高窟、鸣沙山、七彩丹霞、祁连草原、门源花海，体验独属于大西北的五彩斑斓。吃的是羊肉串、辣条子拌面，手抓羊肉，炕锅羊排，牦牛肉火锅，我们全程安排入住星级舒适酒店，现在点击左下角推荐链接，还能升级一晚摩洛哥星空帐篷，置身沙漠中，抬头仰望漫天星辰...现在人均2000出头就足够了，没有隐形购物环节和强制消费，小恐龙国际旅行社承诺，不满意免费重游，现在暑期青甘2-8人纯玩小团名额不多了，赶紧点击左下角链接咨询详情吧'
+origins = [
+  'http://localhost:5173',
+  'http://192.168.0.4:5173',
+]
+sample_text = '想来西北的朋友，一定要先联系我们。小恐龙国旅推出的青甘环线纯玩王牌线路，7天6晚畅游青海湖、茶卡盐湖、门源花海，体验独属于大西北的五彩斑斓。吃的是羊肉串、辣条子拌面，手抓羊肉，炕锅羊排，牦牛肉火锅，我们全程安排入住星级舒适酒店，现在点击左下角推荐链接，还能升级一晚摩洛哥星空帐篷，置身沙漠中，抬头仰望漫天星辰...现在人均2000出头就足够了，没有隐形购物环节和强制消费，小恐龙国际旅行社承诺，不满意免费重游，现在暑期青甘2-8人纯玩小团名额不多了，赶紧点击左下角链接咨询详情吧'
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,6 +29,13 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(
+  CORSMiddleware,
+  allow_origins=origins,
+  allow_credentials=True,
+  allow_methods=["*"],
+  allow_headers=["*"],
+)
 
 @app.post('/voices')
 async def generate_voice(template_file: UploadFile, name: str = Form()):
